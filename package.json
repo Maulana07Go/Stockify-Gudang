@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "tailwindcss -i resources/css/app.css -o dist/output.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "axios": "^1.7.4",
+    "concurrently": "^9.0.1",
+    "laravel-vite-plugin": "^1.2.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.11"
+  },
+  "name": "stockify",
+  "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
+  "version": "1.0.0",
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "author": "",
+  "license": "ISC"
+}
