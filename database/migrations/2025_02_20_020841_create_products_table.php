@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku')->unique()->comment('Stock Keeping Unit');
             $table->text('description')->nullable();
-            $table->decimal('purchase_price', 10, 2);
-            $table->decimal('selling_price', 10, 2);
+            $table->integer('purchase_price');
+            $table->integer('selling_price');
             $table->string('image')->nullable()->comment('Path ke file gambar');
             $table->integer('minimum_stock')->default(0);
             $table->integer('stock')->default(0);

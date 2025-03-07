@@ -22,7 +22,7 @@
         <!-- Logo Aplikasi -->
         <div class="mb-4">
             <label class="block text-gray-700 font-semibold">Logo Aplikasi</label>
-            @if ($setting->logo)
+            @if (optional($setting)->logo)
                 <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo Aplikasi" class="h-20 w-auto mb-3">
             @else
                 <p class="text-gray-500">Belum ada logo</p>
