@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
             $table->string('name')->comment('Misalnya: ukuran, warna, berat');
             $table->string('value');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

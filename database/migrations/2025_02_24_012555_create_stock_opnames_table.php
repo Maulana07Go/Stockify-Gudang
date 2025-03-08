@@ -19,7 +19,8 @@ return new class extends Migration
             $table->integer('difference');     // Selisih stok (bisa negatif)
             $table->text('notes')->nullable(); // Catatan tambahan
             $table->date('date');
-            $table->timestamps();              // Waktu opname dilakukan
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

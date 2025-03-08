@@ -20,7 +20,8 @@ return new class extends Migration
             $table->date('date');
             $table->enum('status', ['Pending', 'Diterima', 'Ditolak', 'Dikeluarkan']);
             $table->text('notes')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

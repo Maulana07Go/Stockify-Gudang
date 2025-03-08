@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('profile_photo')->nullable();
             $table->string('password');
             $table->enum('role', ['Admin', 'Staff Gudang', 'Manajer Gudang'])->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
 
     }

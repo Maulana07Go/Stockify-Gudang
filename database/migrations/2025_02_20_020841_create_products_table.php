@@ -26,7 +26,8 @@ return new class extends Migration
             $table->integer('reorder_point')->default(0);
             $table->integer('average_usage')->default(0);
             $table->integer('average_lead_time')->default(0);
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 

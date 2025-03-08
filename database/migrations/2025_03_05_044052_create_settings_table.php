@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('site_name')->default('Stockify'); // Nama aplikasi
             $table->string('logo')->nullable(); // Path logo
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
         });
     }
 
