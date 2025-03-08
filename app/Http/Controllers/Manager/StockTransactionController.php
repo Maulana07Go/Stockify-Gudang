@@ -50,7 +50,7 @@ class StockTransactionController extends Controller
         $validatedData['status'] = 'Pending';
         $validatedData['date'] = now();
 
-        $this->stocktransactionService->create($validatedData);
+        $this->stocktransactionService->createStockTransaction($validatedData);
 
         $vali['user_id'] = auth()->id();
         $vali['activity'] = 'Membuat transaksi stok baru';
