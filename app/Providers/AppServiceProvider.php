@@ -15,7 +15,7 @@ use App\Repositories\Interfaces\UserActivityRepositoryInterface;
 use App\Repositories\Eloquent\UserActivityRepository;
 use App\Repositories\Interfaces\StockTransactionRepositoryInterface;
 use App\Repositories\Eloquent\StockTransactionRepository;
-use App\Repositories\Eloquent\SeetingRepository;
+use App\Repositories\Eloquent\SettingRepository;
 use App\Repositories\Interfaces\SettingRepositoryInterface;
 use App\Repositories\Eloquent\StockOpnameRepository;
 use App\Repositories\Interfaces\StockOpnameRepositoryInterface;
