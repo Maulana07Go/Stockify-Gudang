@@ -7,19 +7,25 @@ use Illuminate\Http\Request;
 use App\Models\StockTransaction;
 use App\Models\Product;
 use App\Services\UserActivityService;
+use App\Services\StockTransactionService;
+use App\Services\ProductService;
 
 class OutConfirmStockTransactionController extends Controller
 {
     protected $useractivityService;
+    protected $stocktransactionService;
+    protected $productService;
 
-    public function __construct(UserActivityService $useractivityService)
+    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService, ProductService $productService)
     {
         $this->useractivityService = $useractivityService;
+        $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
     }
 
     public function index()
     {
-        $transactions = StockTransaction::with(['product', 'user'])->whereIn('status', ['Pending'])->whereIn('type', ['Keluar'])->latest()->get();
+        $transactions = $this->stocktransactionService->getPendingStockTransactions('keluar');
         return view('staff.stock.outconfirm.index', compact('transactions'));
     }
 
@@ -28,8 +34,8 @@ class OutConfirmStockTransactionController extends Controller
      */
     public function edit($id)
     {
-        $transaction = StockTransaction::findOrFail($id);
-        $product = Product::findOrFail($transaction->product_id);
+        $transaction = $this->stocktransactionService->getStockTransactionById($id);
+        $product = $this->productService->getProductById($transaction->product_id);
         session(['previous_url' => url()->previous()]);
         return view('staff.stock.outconfirm.edit', compact('transaction', 'product'));
     }
@@ -46,10 +52,10 @@ class OutConfirmStockTransactionController extends Controller
 
         $request['date'] = now();
 
-        $transaction = StockTransaction::findOrFail($id);
+        $transaction = $this->stocktransactionService->getStockTransactionById($id);
 
         if ($request->status === 'Dikeluarkan') {
-            $product = Product::findOrFail($transaction->product_id);
+            $product = $this->productService->getProductById($transaction->product_id);
             if ($product->stock >= $transaction->quantity) {
                 $product->update([
                     'stock' => $product->stock - $transaction->quantity

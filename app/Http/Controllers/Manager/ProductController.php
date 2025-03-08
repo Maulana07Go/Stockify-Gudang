@@ -10,16 +10,19 @@ use App\Models\Supplier;
 use App\Models\Product;
 use App\Services\CategoryService;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SupplierService;
 
 class ProductController extends Controller
 {
     protected $productService;
     protected $categoryService;
+    protected $supplierService;
 
-    public function __construct(ProductService $productService, CategoryService $categoryService)
+    public function __construct(ProductService $productService, CategoryService $categoryService,  SupplierService $supplierService)
     {
         $this->productService = $productService;
         $this->categoryService = $categoryService;
+        $this->supplierService = $supplierService;
     }
 
     /**
@@ -39,8 +42,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
-        $suppliers = Supplier::all();
+        $categories = $this->categoryService->getAllCategories();
+        $suppliers = $this->supplierService->getAllSuppliers();
 
         return view('manager.product.create', compact('categories', 'suppliers'));
     }
@@ -86,8 +89,8 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = $this->productService->getProductById($id);
-        $categories = Category::all();
-        $suppliers = Supplier::all();
+        $categories = $this->categoryService->getAllCategories();
+        $suppliers = $this->supplierService->getAllSuppliers();
 
         return view('manager.product.edit', compact('product', 'categories', 'suppliers'));
     }

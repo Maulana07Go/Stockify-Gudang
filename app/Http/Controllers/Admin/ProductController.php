@@ -12,18 +12,21 @@ use App\Models\UserActivity;
 use App\Services\CategoryService;
 use App\Services\UserActivityService;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SupplierService;
 
 class ProductController extends Controller
 {
     protected $productService;
     protected $categoryService;
     protected $useractivityService;
+    protected $supplierService;
 
-    public function __construct(ProductService $productService, CategoryService $categoryService, UserActivityService $useractivityService)
+    public function __construct(ProductService $productService, CategoryService $categoryService, UserActivityService $useractivityService, SupplierService $supplierService)
     {
         $this->productService = $productService;
         $this->categoryService = $categoryService;
         $this->useractivityService = $useractivityService;
+        $this->supplierService = $supplierService;
     }
 
     /**
@@ -43,8 +46,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
-        $suppliers = Supplier::all();
+        $categories = $this->categoryService->getAllCategories();
+        $suppliers = $this->supplierService->getAllSuppliers();
 
         return view('admin.product.create', compact('categories', 'suppliers'));
     }
@@ -95,8 +98,8 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = $this->productService->getProductById($id);
-        $categories = Category::all();
-        $suppliers = Supplier::all();
+        $categories = $this->categoryService->getAllCategories();
+        $suppliers = $this->supplierService->getAllSuppliers();
 
         return view('admin.product.edit', compact('product', 'categories', 'suppliers'));
     }
@@ -161,7 +164,7 @@ class ProductController extends Controller
     public function exportCsv()
     {
         $fileName = 'product_report.csv';
-        $products = Product::all();
+        $products = $this->productService->getAllProducts();
 
         $headers = [
             "Content-Type"        => "text/csv; charset=UTF-8",
@@ -221,7 +224,7 @@ class ProductController extends Controller
         $header = fgetcsv($handle, 1000, ","); // Ambil header CSV
 
         while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-            Product::create([
+            $this->productService->createProduct([
                 "category_id"       => $data[1],
                 "supplier_id"       => $data[2],
                 "name"              => $data[3],

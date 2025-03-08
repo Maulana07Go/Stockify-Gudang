@@ -8,27 +8,33 @@ use App\Models\Product;
 use App\Models\StockOpname;
 use App\Services\UserActivityService;
 use App\Services\StockTransactionService;
+use App\Services\ProductService;
+use App\Services\StockOpnameService;
 
 class StockOpnameController extends Controller
 {
     protected $useractivityService;
     protected $stocktransactionService;
+    protected $productService;
+    protected $stockopnameService;
 
-    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService)
+    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService, ProductService $productService, StockOpnameService $stockopnameService)
     {
         $this->useractivityService = $useractivityService;
         $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
+        $this->stockopnameService = $stockopnameService;
     }
 
     public function index()
     {
-        $opnames = StockOpname::with('product')->latest()->get();
+        $opnames = $this->stockopnameService->getAllStockOpnameWithProduct();
         return view('manager.stock.opname.index', compact('opnames'));
     }
 
     public function create()
     {
-        $products = Product::all();
+        $products =  $this->productService->getAllProducts();
         return view('manager.stock.opname.create', compact('products'));
     }
 
@@ -43,7 +49,7 @@ class StockOpnameController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $product = $this->productService->getProductById($request->product_id);
         $initialStock = $product->stock; // Anggap ada atribut `stock` pada model `Product`
         $finalStock = $request->final_stock;
         $difference = $finalStock - $initialStock;
@@ -52,7 +58,7 @@ class StockOpnameController extends Controller
             'stock' => $product->stock + $difference
         ]);
 
-        StockOpname::create([
+        $this->stockopnameService->createStockOpname([
             'product_id' => $product->id,
             'initial_stock' => $initialStock,
             'final_stock' => $finalStock,

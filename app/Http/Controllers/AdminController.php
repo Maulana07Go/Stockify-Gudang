@@ -9,34 +9,37 @@ use App\Models\UserActivity;
 use App\Models\User;
 use App\Services\UserActivityService;
 use Carbon\Carbon;
+use App\Services\StockTransactionService;
+use App\Services\ProductService;
 
 class AdminController extends Controller
 {
     protected $useractivityService;
+    protected $stocktransactionService;
+    protected $productService;
 
-    public function __construct(UserActivityService $useractivityService)
+    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService, ProductService $productService)
     {
         $this->useractivityService = $useractivityService;
+        $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
     }
 
     public function index(Request $request)
     
     {
-        $transactionin = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status',['Diterima'])->count();
-        $transactionout = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status',['Dikeluarkan'])->count(); 
-        $totalProducts = Product::count();
-        $intoday = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status',['Diterima'])->whereDate('date',now())->count();
-        $inthismonth = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status', ['Diterima'])->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year)->count();
-        $outtoday = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status',['Dikeluarkan'])->whereDate('date',now())->count();
-        $outthismonth = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status', ['Dikeluarkan'])->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year)->count();
+        $transactionin = $this->stocktransactionService->countStockTransactionsTotal('Masuk', 'Diterima');
+        $transactionout = $this->stocktransactionService->countStockTransactionsTotal('Keluar', 'Dikeluarkan'); 
+        $totalProducts = $this->productService->countTotalProducts();
+        $intoday = $this->stocktransactionService->countStockTransactionsToday('Masuk', 'Diterima');
+        $inthismonth = $this->stocktransactionService->countStockTransactionsThisMonth('Masuk', 'Diterima');
+        $outtoday = $this->stocktransactionService->countStockTransactionsToday('Keluar', 'Dikeluarkan');
+        $outthismonth = $this->stocktransactionService->countStockTransactionsThisMonth('Keluar', 'Dikeluarkan');
         $search = $request->input('search');
         $useractivities = $this->useractivityService->getFilteredUserActivity($search);
         $usernames = User::whereIn('id', $useractivities->pluck('user_id'))->get();
 
-        $stockData = Product::with('category')
-            ->selectRaw('category_id, SUM(stock) as total_stock')
-            ->groupBy('category_id')
-            ->get();
+        $stockData = $this->productService->getStockDataByCategory();
 
         // Konversi ID kategori menjadi nama kategori
         $stockData->each(function ($item) {
@@ -44,15 +47,7 @@ class AdminController extends Controller
         });
 
         // Mengambil data pergerakan stok (barang masuk dan keluar) dalam 30 hari terakhir
-        $stockMovement = StockTransaction::selectRaw(
-            'DATE(date) as date, 
-             SUM(CASE WHEN type = "Masuk" THEN quantity ELSE 0 END) as stock_in,
-             SUM(CASE WHEN type = "Keluar" THEN quantity ELSE 0 END) as stock_out'
-        )
-        ->where('date', '>=', now()->subDays(30))
-        ->groupBy('date')
-        ->orderBy('date')
-        ->get();
+        $stockMovement = $this->stocktransactionService->getStockMovement(30);
 
         return view('admin.dashboard.index', compact('transactionin', 'transactionout', 'totalProducts', 'useractivities', 'usernames', 'intoday', 'outtoday', 'inthismonth','outthismonth', 'stockData', 'stockMovement'));
     }

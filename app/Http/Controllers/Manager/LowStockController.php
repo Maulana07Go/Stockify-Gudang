@@ -6,14 +6,25 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\StockTransaction;
+use App\Services\StockTransactionService;
+use App\Services\ProductService;
 
 class LowStockController extends Controller
 {
+    protected $stocktransactionService;
+    protected $productService;
+
+    public function __construct(StockTransactionService $stocktransactionService, ProductService $productService)
+    {
+        $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
+    }
+
     public function index()
     {
-        $lowproducts = Product::whereColumn('stock', '<', 'minimum_stock')->get();
-        $intoday = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status',['Diterima'])->whereDate('date',now())->count();
-        $outtoday = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status',['Dikeluarkan'])->whereDate('date',now())->count();
+        $lowproducts = $this->productService->getLowStockProducts();
+        $intoday = $this->stocktransactionService->countStockTransactionsToday('Masuk', 'Diterima');
+        $outtoday = $this->stocktransactionService->countStockTransactionsToday('Keluar', 'Dikeluarkan');
 
         return view('manager.dashboard.lowstock.index',compact('lowproducts','intoday','outtoday'));
     }

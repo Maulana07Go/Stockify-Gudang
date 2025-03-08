@@ -5,14 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\StockTransaction;
+use App\Services\StockTransactionService;
+use App\Services\ProductService;
 
 class ManagerController extends Controller
 {
+    protected $stocktransationService;
+    protected $productService;
+
+    public function __construct(StockTransactionService $stocktransactionService, ProductService $productService)
+    {
+        $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
+    }
+
     public function index()
     {
-        $totallowproducts = Product::whereColumn('stock', '<', 'minimum_stock')->count();
-        $intoday = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status',['Diterima'])->whereDate('date',now())->count();
-        $outtoday = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status',['Dikeluarkan'])->whereDate('date',now())->count();
+        $totallowproducts = $this->productService->countLowStockProducts();
+        $intoday = $this->stocktransactionService->countStockTransactionsToday('Masuk', 'Diterima');
+        $outtoday = $this->stocktransactionService->countStockTransactionsToday('Keluar', 'Dikeluarkan');
 
         return view('manager.dashboard.index',compact('totallowproducts','intoday','outtoday'));
     }

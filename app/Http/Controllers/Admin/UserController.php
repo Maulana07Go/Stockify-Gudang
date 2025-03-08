@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\UserActivityService;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -12,7 +13,7 @@ class UserController extends Controller
     protected $userService;
     protected $useractivityService;
 
-    public function __construct(UserRepositoryInterface $userService, UserActivityService $useractivityService)
+    public function __construct(UserService $userService, UserActivityService $useractivityService)
     {
         $this->userService = $userService;
         $this->useractivityService = $useractivityService;
@@ -52,7 +53,7 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user = $this->userService->findById($id);
+        $user = $this->userService->getUserById($id);
         return view('admin.user.edit', compact('user'));
     }
 

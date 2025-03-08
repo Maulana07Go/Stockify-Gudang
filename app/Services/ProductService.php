@@ -25,6 +25,31 @@ class ProductService
         return $this->productRepository->getFilteredProducts($search, $categoryId);
     }
 
+    public function countTotalProducts()
+    {
+        return $this->productRepository->countTotalProducts();
+    }
+
+    public function getStockDataByCategory()
+    {
+        return $this->productRepository->getStockDataByCategory();
+    }
+
+    public function countLowStockProducts()
+    {
+        return $this->productRepository->countLowStockProducts();
+    }
+
+    public function getProductsAndMinStock()
+    {
+        return $this->productRepository->getProductsAndMinStock();
+    }
+
+    public function getLowStockProducts()
+    {
+        return $this->productRepository->getLowStockProducts();
+    }
+
     public function getProductById($id)
     {
         return $this->productRepository->getById($id);

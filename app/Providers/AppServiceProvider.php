@@ -15,6 +15,12 @@ use App\Repositories\Interfaces\UserActivityRepositoryInterface;
 use App\Repositories\Eloquent\UserActivityRepository;
 use App\Repositories\Interfaces\StockTransactionRepositoryInterface;
 use App\Repositories\Eloquent\StockTransactionRepository;
+use App\Repositories\Eloquent\SeetingRepository;
+use App\Repositories\Interfaces\SettingRepositoryInterface;
+use App\Repositories\Eloquent\StockOpnameRepository;
+use App\Repositories\Interfaces\StockOpnameRepositoryInterface;
+use App\Repositories\Eloquent\ProductAttributeRepository;
+use App\Repositories\Interfaces\ProductAttributeRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(UserActivityRepositoryInterface::class, UserActivityRepository::class);
         $this->app->bind(StockTransactionRepositoryInterface::class, StockTransactionRepository::class);
+        $this->app->bind(SettingRepositoryInterface::class, SettingRepository::class);
+        $this->app->bind(StockOpnameRepositoryInterface::class, StockOpnameRepository::class);
+        $this->app->bind(ProductAttributeRepositoryInterface::class, ProductAttributeRepository::class);
     }
 
     /**

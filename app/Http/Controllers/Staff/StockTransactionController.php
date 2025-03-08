@@ -25,7 +25,7 @@ class StockTransactionController extends Controller
 
     public function show($id)
     {
-        $transaction = StockTransaction::findOrFail($id); // Ambil data transaksi berdasarkan ID
+        $transaction = $this->stocktransactionService->getStockTransactionById($id); // Ambil data transaksi berdasarkan ID
 
         return view('staff.stock.show', compact('transaction'));
     }

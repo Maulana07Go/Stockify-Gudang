@@ -4,18 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Services\ProductService;
 
 class StockMinimumController extends Controller
 {
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
     public function index()
     {
-        $products = Product::select('id', 'name', 'minimum_stock')->get();
+        $products = $this->productService->getProductsAndMinStock();
         return view('admin.stock.minimum.index', compact('products'));
     }
 
     public function edit($id)
     {
-        $product = Product::findOrFail($id);
+        $product = $this->productService->getProductById($id);
         return view('admin.stock.minimum.edit', compact('product'));
     }
     
@@ -27,7 +35,7 @@ class StockMinimumController extends Controller
             'average_lead_time' => 'required|numeric|min:0',
         ]);
 
-        $product = Product::findOrFail($id);
+        $product = $this->productService->getProductById($id);
 
         $minimumStock = $request->reorder_point - ($request->average_usage * $request->average_lead_time);
 

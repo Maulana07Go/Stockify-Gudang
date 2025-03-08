@@ -7,14 +7,20 @@ use Illuminate\Http\Request;
 use App\Services\ProductService;
 use App\Models\StockTransaction;
 use App\Models\Category;
+use App\Services\StockTransactionService;
+use App\Services\CategoryService;
 
 class ReportController extends Controller
 {
     protected $productService;
+    protected $stocktransactionService;
+    protected $categoryService;
 
-    public function __construct(ProductService $productService)
+    public function __construct(ProductService $productService, StockTransactionService $stocktransactionService, CategoryService $categoryService)
     {
         $this->productService = $productService;
+        $this->stocktransactionService = $stocktransactionService;
+        $this->categoryService = $categoryService;
     }
 
     public function index(Request $request)
@@ -22,8 +28,8 @@ class ReportController extends Controller
         $search = $request->input('search');
         $categoryId = $request->input('category_id');
         $products = $this->productService->getFilteredProducts($search, $categoryId);
-        $totalstokmasuk = StockTransaction::whereIn('type', ['Masuk'])->whereIn('status', ['Diterima'])->sum('quantity');
-        $totalstokkeluar = StockTransaction::whereIn('type', ['Keluar'])->whereIn('status', ['Dikeluarkan'])->sum('quantity');
+        $totalstokmasuk = $this->stocktransactionService->getTotalStockIn();
+        $totalstokkeluar = $this->stocktransactionService->getTotalStockOut();
         // Ambil input dari form dropdown
         $yearStart = $request->input('year_start');
         $yearEnd = $request->input('year_end');
@@ -31,29 +37,13 @@ class ReportController extends Controller
         $monthEnd = $request->input('month_end');
         $dateStart = $request->input('date_start');
         $dateEnd = $request->input('date_end');
-        $firstDay = StockTransaction::min('date') ?? now()->format('Y-m-d'); // Tanggal transaksi pertama
-        $lastDay = StockTransaction::max('date') ?? now()->format('Y-m-d');  // Tanggal transaksi terakhir
+        $firstDay = $this->stocktransactionService->getFirstTransactionDate(); // Tanggal transaksi pertama
+        $lastDay = $this->stocktransactionService->getLastTransactionDate();  // Tanggal transaksi terakhir
 
         // Query untuk filter berdasarkan input
-        $queryStockMasuk = StockTransaction::whereIn('type', ['Masuk'])
-            ->whereIn('status', ['Diterima'])
-            ->whereHas('product', function ($q) use ($categoryId) {
-                if ($categoryId) {
-                    $q->where('category_id', $categoryId);
-                }
-            })
-            ->selectRaw('product_id, SUM(quantity) as total_quantity')
-            ->groupBy('product_id');
+        $queryStockMasuk = $this->stocktransactionService->getStockInByCategory($categoryId);
 
-        $queryStockKeluar = StockTransaction::whereIn('type', ['Keluar'])
-            ->whereIn('status', ['Dikeluarkan'])
-            ->whereHas('product', function ($q) use ($categoryId) {
-                if ($categoryId) {
-                    $q->where('category_id', $categoryId);
-                }
-            })
-            ->selectRaw('product_id, SUM(quantity) as total_quantity')
-            ->groupBy('product_id');
+        $queryStockKeluar = $this->stocktransactionService->getStockOutByCategory($categoryId);
 
         // Filter berdasarkan tahun
         if ($yearStart && $yearEnd) {
@@ -123,27 +113,9 @@ class ReportController extends Controller
         $totalStockMasuk = $queryStockMasuk->pluck('total_quantity', 'product_id');
         $totalStockKeluar = $queryStockKeluar->pluck('total_quantity', 'product_id');
 
-        $queryStockAwal = StockTransaction::whereIn('type', ['Masuk','Keluar'])
-            ->whereIn('status', ['Diterima','Dikeluarkan'])
-            ->whereHas('product', function ($q) use ($categoryId) {
-                if ($categoryId) {
-                    $q->where('category_id', $categoryId);
-                }
-            })
-            ->whereDate('date', '<', $firstDay)
-            ->selectRaw('product_id, SUM(CASE WHEN type = "Masuk" THEN quantity ELSE -quantity END) as total_stock')
-            ->groupBy('product_id');
+        $queryStockAwal = $this->stocktransactionService->getStockInitial($categoryId, $firstDay);
 
-        $queryStockAkhir = StockTransaction::whereIn('type', ['Masuk', 'Keluar'])
-            ->whereIn('status', ['Diterima', 'Dikeluarkan'])
-            ->whereHas('product', function ($q) use ($categoryId) {
-                if ($categoryId) {
-                    $q->where('category_id', $categoryId);
-                }
-            })
-            ->whereDate('date', '<=', $lastDay)
-            ->selectRaw('product_id, SUM(CASE WHEN type = "Masuk" THEN quantity ELSE -quantity END) as total_stock')
-            ->groupBy('product_id');
+        $queryStockAkhir = $this->stocktransactionService->getStockFinal($categoryId, $lastDay);
 
             $stockAwal = $queryStockAwal->pluck('total_stock', 'product_id')->toArray();
             if (empty($stockAwal)) {
@@ -155,10 +127,10 @@ class ReportController extends Controller
             }
 
         // Ambil daftar tahun untuk dropdown (ambil dari database)
-        $years = StockTransaction::selectRaw('YEAR(date) as year')->distinct()->pluck('year');
+        $years = $this->stocktransactionService->getTransactionYears();
 
         // Ambil daftar kategori untuk dropdown
-        $categories = Category::all(); // Pastikan model Category ada
+        $categories = $this->categoryService->getAllCategories(); // Pastikan model Category ada
         return view('manager.report.index', compact('products', 'totalstokmasuk', 'totalstokkeluar','totalStockMasuk', 'totalStockKeluar', 'yearStart', 'yearEnd', 'monthStart', 'monthEnd', 'dateStart', 'dateEnd', 'years', 'categories', 'categoryId', 'stockAwal', 'stockAkhir'));
     }
 }

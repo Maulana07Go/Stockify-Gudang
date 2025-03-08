@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Product;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -28,6 +29,34 @@ class ProductRepository implements ProductRepositoryInterface
         ->when($categoryId, function ($query, $categoryId) {
             return $query->where('category_id', $categoryId);
         })->paginate(10);
+    }
+
+    public function countTotalProducts(): int
+    {
+        return Product::count();
+    }
+
+    public function getStockDataByCategory(): Collection
+    {
+        return Product::with('category')
+            ->selectRaw('category_id, SUM(stock) as total_stock')
+            ->groupBy('category_id')
+            ->get();
+    }
+
+    public function countLowStockProducts(): int
+    {
+        return Product::whereColumn('stock', '<', 'minimum_stock')->count();
+    }
+
+    public function getProductsAndMinStock(): Collection
+    {
+        return Product::select('id', 'name', 'minimum_stock')->get();
+    }
+
+    public function getLowStockProducts(): Collection
+    {
+        return Product::whereColumn('stock', '<', 'minimum_stock')->get();
     }
 
     /**

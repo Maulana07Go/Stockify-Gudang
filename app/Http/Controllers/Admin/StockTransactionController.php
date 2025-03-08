@@ -9,7 +9,7 @@ use App\Services\StockTransactionService;
 
 class StockTransactionController extends Controller
 {
-    protected $stocktransationService;
+    protected $stocktransactionService;
 
     public function __construct(StockTransactionService $stocktransactionService)
     {

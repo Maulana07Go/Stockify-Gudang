@@ -6,9 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Services\ProductAttributeService;
 
 class ProductAttributeController extends Controller
 {
+    protected $productattributeService;
+
+    public function __construct(ProductAttributeService $productattributeService)
+    {
+        $this->productattributeService = $productattributeService;
+    }
+
     // Form Tambah Atribut
     public function create(Product $product)
     {
@@ -41,7 +49,7 @@ class ProductAttributeController extends Controller
         }
 
         // Simpan atribut baru ke dalam produk yang dipilih
-        ProductAttribute::create([
+        $this->productattributeService->createProductAttribute([
             'product_id' => $product->id,
             'name' => $request->name,
             'value' => $request->value,

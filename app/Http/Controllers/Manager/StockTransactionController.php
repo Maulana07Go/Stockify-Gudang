@@ -8,16 +8,19 @@ use App\Models\StockTransaction;
 use App\Models\Product;
 use App\Services\UserActivityService;
 use App\Services\StockTransactionService;
+use App\Services\ProductService;
 
 class StockTransactionController extends Controller
 {
     protected $useractivityService;
     protected $stocktransationService;
+    protected $productService;
 
-    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService)
+    public function __construct(UserActivityService $useractivityService, StockTransactionService $stocktransactionService, ProductService $productService)
     {
         $this->useractivityService = $useractivityService;
         $this->stocktransactionService = $stocktransactionService;
+        $this->productService = $productService;
     }
 
     public function index(Request $request)
@@ -29,7 +32,7 @@ class StockTransactionController extends Controller
 
     public function create()
     {
-        $products = Product::all(); // Ambil daftar produk
+        $products = $this->productService->getAllProducts(); // Ambil daftar produk
         return view('manager.stock.create', compact('products'));
     }
 
@@ -47,7 +50,7 @@ class StockTransactionController extends Controller
         $validatedData['status'] = 'Pending';
         $validatedData['date'] = now();
 
-        StockTransaction::create($validatedData);
+        $this->stocktransactionService->create($validatedData);
 
         $vali['user_id'] = auth()->id();
         $vali['activity'] = 'Membuat transaksi stok baru';
@@ -60,7 +63,7 @@ class StockTransactionController extends Controller
 
     public function show($id)
     {
-        $transaction = StockTransaction::findOrFail($id); // Ambil data transaksi berdasarkan ID
+        $transaction = $this->stocktransactionService->getStockTransactionById($id); // Ambil data transaksi berdasarkan ID
 
         return view('manager.stock.show', compact('transaction'));
     }
